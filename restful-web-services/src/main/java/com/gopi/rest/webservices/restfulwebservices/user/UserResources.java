@@ -3,12 +3,19 @@
  */
 package com.gopi.rest.webservices.restfulwebservices.user;
 
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+
 import java.net.URI;
 import java.util.List;
 
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,6 +34,8 @@ public class UserResources
 
   @Autowired
   private UserDaoService userDaoService;
+  
+ 
 
   @GetMapping("/users")
   public List<User> retrieveAllUsers()
@@ -35,15 +44,22 @@ public class UserResources
   }
 
   @GetMapping("/users/{id}")
-  public User retrieveUSer(@PathVariable int id)
+  public Resource<User> retrieveUSer(@PathVariable int id)
   {
-
     User user = userDaoService.findOne(id);
     if (user == null)
     {
       throw new UserNotFoundException("User " + id + " not Found!!!");
     }
-    return user;
+    //HATEOAS
+    Resource<User> resource = new Resource<User>(user);
+    //This gives rest-api uri of retrieveAllUsers()
+    ControllerLinkBuilder linkTo = linkTo(
+        methodOn(this.getClass()).retrieveAllUsers());
+    //Name to uri
+    Link linkName = linkTo.withRel("all-users");
+    resource.add(linkName);
+    return resource;
   }
 
   // @RequestBody - to say that user data will be available as a part of POST
