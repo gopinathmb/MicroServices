@@ -30,64 +30,86 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
  * @author gopinath_mb
  */
 @RestController
-public class UserJPAResources
-{
+public class UserJPAResources {
 
-  @Autowired
-  private UserDaoService userDaoService;
+	@Autowired
+	private UserRepository userRepository;
 
-  @Autowired
-  private UserRepository userRepository;
+	@Autowired
+	private PostRepository postRepository;
 
-  @GetMapping("/jpa/users")
-  public List<User> retrieveAllUsers()
-  {
-    return userRepository.findAll();
-  }
+	@GetMapping("/jpa/users")
+	public List<User> retrieveAllUsers() {
+		return userRepository.findAll();
+	}
 
-  @GetMapping("/jpa/users/{id}")
-  public Resource<User> retrieveUSer(@PathVariable int id)
-  {
-    Optional<User> user = userRepository.findById(id);
-    if (user.isPresent() == false)
-    {
-      throw new UserNotFoundException("User " + id + " not Found!!!");
-    }
-    // HATEOAS
-    Resource<User> resource = new Resource<User>(user.get());
-    // This gives rest-api uri of retrieveAllUsers()
-    ControllerLinkBuilder linkTo = linkTo(
-        methodOn(this.getClass()).retrieveAllUsers());
-    // Name to uri
-    Link linkName = linkTo.withRel("all-users");
-    resource.add(linkName);
-    return resource;
-  }
+	@GetMapping("/jpa/users/{id}")
+	public Resource<User> retrieveUser(@PathVariable int id) {
+		Optional<User> user = userRepository.findById(id);
+		if (user.isPresent() == false) {
+			throw new UserNotFoundException("User " + id + " not Found!!!");
+		}
+		// HATEOAS
+		Resource<User> resource = new Resource<User>(user.get());
+		// This gives rest-api uri of retrieveAllUsers()
+		ControllerLinkBuilder linkTo = linkTo(methodOn(this.getClass()).retrieveAllUsers());
+		// Name to uri
+		Link linkName = linkTo.withRel("all-users");
+		resource.add(linkName);
+		return resource;
+	}
 
-  // @RequestBody - to say that user data will be available as a part of POST
-  // request.
-  // @Valid is a java annotation which says validate against the inputs which
-  // are defined in User class like size and data.
-  @PostMapping("/jpa/users")
-  public ResponseEntity<Object> createUser(@Valid @RequestBody User user)
-  {
+	// @RequestBody - to say that user data will be available as a part of POST
+	// request.
+	// @Valid is a java annotation which says validate against the inputs which
+	// are defined in User class like size and data.
+	@PostMapping("/jpa/users")
+	public ResponseEntity<Object> createUser(@Valid @RequestBody User user) {
 
-    User userCreated = userRepository.save(user);
+		User userCreated = userRepository.save(user);
 
-    // This is to say that what is the location of new user created
-    URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-        .path("/{id}").buildAndExpand(userCreated.getId()).toUri();
+		// This is to say that what is the location of new user created
+		URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
+				.buildAndExpand(userCreated.getId()).toUri();
 
-    ResponseEntity<Object> response = ResponseEntity.created(location).build();
-    return response;
+		ResponseEntity<Object> response = ResponseEntity.created(location).build();
+		return response;
 
-  }
+	}
 
-  @DeleteMapping("/jpa/users/{id}")
-  public void deleteUser(@PathVariable int id)
-  {
-    userRepository.deleteById(id);
+	@DeleteMapping("/jpa/users/{id}")
+	public void deleteUser(@PathVariable int id) {
+		userRepository.deleteById(id);
 
-  }
+	}
+
+	@GetMapping("/jpa/users/{id}/posts")
+	public List<Post> retrieveUserPosts(@PathVariable int id) {
+		Optional<User> user = userRepository.findById(id);
+		if (user.isPresent() == false) {
+			throw new UserNotFoundException("User " + id + " not Found!!!");
+		}
+		List<Post> posts = user.get().getPosts();
+		return posts;
+	}
+
+	@PostMapping("/jpa/users/{id}/post")
+	public ResponseEntity<Object> createPost(@PathVariable int id, @RequestBody Post post) {
+		Optional<User> user = userRepository.findById(id);
+		if (user.isPresent() == false) {
+			throw new UserNotFoundException("User " + id + " not Found!!!");
+		}
+		User user2 = user.get();
+		post.setUser(user2);
+		Post postCreated = postRepository.save(post);
+
+		// This is to say that what is the location of new user created
+		URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
+				.buildAndExpand(postCreated.getId()).toUri();
+
+		ResponseEntity<Object> response = ResponseEntity.created(location).build();
+		return response;
+
+	}
 
 }
