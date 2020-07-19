@@ -25,8 +25,7 @@ public class HelloWorldController
   private MessageSource messageSource;
 
   // Any end point should be annotatated with either of then and provide type
-  // and uri
-  // U can use either RequestMapping or GetMapping.GetMapping is simple.
+  // and uri U can use either RequestMapping or GetMapping.GetMapping is simple.
   // @RequestMapping(method = RequestMethod.GET,path = "/hello-world")
   @GetMapping(path = "/hello-world")
   public String helloWorld()

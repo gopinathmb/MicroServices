@@ -20,6 +20,7 @@ public class Post {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JsonIgnore
 	private User user;
+	
 	public Post()
 	{
 		

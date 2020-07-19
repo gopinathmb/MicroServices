@@ -22,7 +22,8 @@ import io.swagger.annotations.ApiModelProperty;
 @ApiModel(description = "This is Pojo class for User.")
 @Entity
 public class User {
-	@Id
+	
+    @Id
 	@GeneratedValue
 	private Integer id;
 
